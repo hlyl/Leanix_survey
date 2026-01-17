@@ -1,0 +1,38 @@
+{
+  "title": "Quick Application Check-in",
+  "introductionText": "Please confirm the current status of your application.",
+  "questionnaire": {
+    "questions": [
+      {
+        "id": "q1",
+        "label": "Is this application still in active use?",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "yes",
+            "label": "Yes"
+          },
+          {
+            "id": "no",
+            "label": "No"
+          }
+        ],
+        "settings": {
+          "isMandatory": true
+        }
+      },
+      {
+        "id": "q2",
+        "label": "Any issues or concerns?",
+        "type": "textarea"
+      }
+    ]
+  },
+  "userQuery": {
+    "roles": [
+      {
+        "subscriptionType": "RESPONSIBLE"
+      }
+    ]
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "title": "Q1 2024 Application Portfolio Review",
+  "introductionText": "Dear Application Owner,\n\nAs part of our quarterly portfolio review, please take a few minutes to update the information about your application(s). This helps us maintain accurate data and make informed decisions about our IT landscape.\n\nThank you for your participation!",
+  "introductionSubject": "Q1 2024 Application Review - Action Required",
+  "sendChangeNotifications": true,
+  "allowedPermissionStatus": "ACTIVE_AND_INVITED",
+  "questionnaire": {
+    "questions": [
+      {
+        "id": "q1_lifecycle",
+        "label": "What is the current lifecycle status of this application?",
+        "descriptiveText": "Select the current phase in the application lifecycle",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "plan",
+            "label": "Plan",
+            "comment": "Application is in planning phase"
+          },
+          {
+            "id": "active",
+            "label": "Active",
+            "comment": "Application is actively used in production"
+          },
+          {
+            "id": "phaseout",
+            "label": "Phase Out",
+            "comment": "Application is being phased out"
+          },
+          {
+            "id": "endoflife",
+            "label": "End of Life",
+            "comment": "Application has reached end of life"
+          }
+        ],
+        "settings": {
+          "isMandatory": true
+        }
+      },
+      {
+        "id": "q2_phaseout_reason",
+        "label": "What is the reason for phasing out this application?",
+        "descriptiveText": "Please provide details about why this application is being phased out",
+        "type": "textarea",
+        "settings": {
+          "isConditional": true,
+          "dependency": {
+            "parentId": "q1_lifecycle",
+            "condition": {
+              "phaseout": true
+            }
+          }
+        }
+      },
+      {
+        "id": "q3_business_criticality",
+        "label": "How business critical is this application?",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "mission_critical",
+            "label": "Mission Critical",
+            "comment": "Business cannot operate without this application"
+          },
+          {
+            "id": "business_critical",
+            "label": "Business Critical",
+            "comment": "Significant business impact if unavailable"
+          },
+          {
+            "id": "business_operational",
+            "label": "Business Operational",
+            "comment": "Supports business operations"
+          },
+          {
+            "id": "administrative",
+            "label": "Administrative",
+            "comment": "Administrative support only"
+          }
+        ],
+        "settings": {
+          "isMandatory": true
+        }
+      },
+      {
+        "id": "q4_users",
+        "label": "Approximately how many active users does this application have?",
+        "type": "number",
+        "descriptiveText": "Enter the number of regular active users"
+      },
+      {
+        "id": "q5_compliance",
+        "label": "Which compliance requirements apply to this application?",
+        "descriptiveText": "Select all that apply",
+        "type": "multiplechoice",
+        "options": [
+          {
+            "id": "gdpr",
+            "label": "GDPR"
+          },
+          {
+            "id": "sox",
+            "label": "SOX"
+          },
+          {
+            "id": "hipaa",
+            "label": "HIPAA"
+          },
+          {
+            "id": "pci_dss",
+            "label": "PCI DSS"
+          },
+          {
+            "id": "iso27001",
+            "label": "ISO 27001"
+          },
+          {
+            "id": "none",
+            "label": "None"
+          }
+        ]
+      },
+      {
+        "id": "q6_last_security_review",
+        "label": "When was the last security review conducted?",
+        "type": "date",
+        "descriptiveText": "Select the date of the most recent security assessment"
+      },
+      {
+        "id": "q7_technical_debt",
+        "label": "On a scale of 1-5, how would you rate the technical debt of this application?",
+        "descriptiveText": "1 = Low technical debt, 5 = High technical debt",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "1",
+            "label": "1 - Low"
+          },
+          {
+            "id": "2",
+            "label": "2"
+          },
+          {
+            "id": "3",
+            "label": "3 - Moderate"
+          },
+          {
+            "id": "4",
+            "label": "4"
+          },
+          {
+            "id": "5",
+            "label": "5 - High"
+          }
+        ]
+      },
+      {
+        "id": "q8_modernization_needed",
+        "label": "Does this application need modernization?",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "yes",
+            "label": "Yes"
+          },
+          {
+            "id": "no",
+            "label": "No"
+          },
+          {
+            "id": "planned",
+            "label": "Already planned"
+          }
+        ]
+      },
+      {
+        "id": "q9_modernization_details",
+        "label": "Please describe the modernization needs",
+        "type": "textarea",
+        "settings": {
+          "isConditional": true,
+          "dependency": {
+            "parentId": "q8_modernization_needed",
+            "condition": {
+              "yes": true,
+              "planned": true
+            }
+          }
+        }
+      },
+      {
+        "id": "q10_hosting",
+        "label": "Where is this application hosted?",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "on_premise",
+            "label": "On-Premise"
+          },
+          {
+            "id": "private_cloud",
+            "label": "Private Cloud"
+          },
+          {
+            "id": "public_cloud",
+            "label": "Public Cloud"
+          },
+          {
+            "id": "hybrid",
+            "label": "Hybrid"
+          },
+          {
+            "id": "saas",
+            "label": "SaaS"
+          }
+        ]
+      },
+      {
+        "id": "q11_cloud_provider",
+        "label": "Which cloud provider?",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "aws",
+            "label": "AWS"
+          },
+          {
+            "id": "azure",
+            "label": "Azure"
+          },
+          {
+            "id": "gcp",
+            "label": "Google Cloud Platform"
+          },
+          {
+            "id": "other",
+            "label": "Other"
+          }
+        ],
+        "settings": {
+          "isConditional": true,
+          "dependency": {
+            "parentId": "q10_hosting",
+            "condition": {
+              "public_cloud": true,
+              "hybrid": true
+            }
+          }
+        }
+      },
+      {
+        "id": "q12_annual_cost",
+        "label": "What is the approximate annual operating cost (USD)?",
+        "type": "number",
+        "descriptiveText": "Include licensing, infrastructure, and support costs"
+      },
+      {
+        "id": "q13_planned_changes",
+        "label": "Are there any planned major changes or initiatives for this application in the next 12 months?",
+        "type": "textarea",
+        "descriptiveText": "Leave blank if no major changes are planned"
+      }
+    ]
+  },
+  "userQuery": {
+    "roles": [
+      {
+        "subscriptionType": "RESPONSIBLE"
+      },
+      {
+        "subscriptionType": "ACCOUNTABLE"
+      }
+    ]
+  }
+}

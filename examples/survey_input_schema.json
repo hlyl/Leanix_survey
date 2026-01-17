@@ -1,0 +1,448 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://leanix.com/schemas/survey-input-v1.json",
+  "title": "SurveyInput",
+  "description": "Main input model for creating a LeanIX survey/poll",
+  "type": "object",
+  "required": ["title", "questionnaire"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Survey title",
+      "minLength": 1
+    },
+    "questionnaire": {
+      "$ref": "#/$defs/Questionnaire"
+    },
+    "introductionText": {
+      "type": ["string", "null"],
+      "description": "Introduction text shown to survey recipients"
+    },
+    "introductionSubject": {
+      "type": ["string", "null"],
+      "description": "Email subject line for survey invitation"
+    },
+    "additionalFactSheetSubject": {
+      "type": ["string", "null"]
+    },
+    "additionalFactSheetText": {
+      "type": ["string", "null"]
+    },
+    "additionalFactSheetCheckEnabled": {
+      "type": ["boolean", "null"]
+    },
+    "repeatInterval": {
+      "type": ["integer", "null"],
+      "description": "Repeat interval in milliseconds (for recurring surveys)"
+    },
+    "timeFrame": {
+      "type": ["integer", "null"],
+      "description": "Time frame in milliseconds"
+    },
+    "sendChangeNotifications": {
+      "type": ["boolean", "null"],
+      "description": "Send notifications when fact sheets change"
+    },
+    "allowedPermissionStatus": {
+      "anyOf": [
+        {"$ref": "#/$defs/AllowedPermissionStatus"},
+        {"type": "null"}
+      ],
+      "description": "Who can participate in the survey"
+    },
+    "dynamicScopeCheckEnabled": {
+      "type": ["boolean", "null"],
+      "description": "Enable dynamic scope checking"
+    },
+    "factSheetQuery": {
+      "anyOf": [
+        {"$ref": "#/$defs/FactSheetQuery"},
+        {"type": "null"}
+      ],
+      "description": "Query for selecting which fact sheets to survey"
+    },
+    "userQuery": {
+      "anyOf": [
+        {"$ref": "#/$defs/UserQuery"},
+        {"type": "null"}
+      ],
+      "description": "Query for selecting survey recipients"
+    }
+  },
+  "$defs": {
+    "AllowedPermissionStatus": {
+      "type": "string",
+      "enum": ["ACTIVE_ONLY", "ACTIVE_AND_INVITED", "ACTIVE_AND_INVITED_AND_CONTACTS"]
+    },
+    "SubscriptionType": {
+      "type": "string",
+      "enum": ["RESPONSIBLE", "OBSERVER", "ACCOUNTABLE", "ALL"]
+    },
+    "Questionnaire": {
+      "type": "object",
+      "required": ["questions"],
+      "properties": {
+        "questions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/Question"}
+        }
+      }
+    },
+    "Question": {
+      "type": "object",
+      "required": ["id", "label", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this question"
+        },
+        "label": {
+          "type": "string",
+          "description": "Question text displayed to users"
+        },
+        "descriptiveText": {
+          "type": ["string", "null"],
+          "description": "Additional help text or description"
+        },
+        "type": {
+          "type": "string",
+          "description": "Question type (text, singlechoice, multiplechoice, etc.)"
+        },
+        "element": {
+          "type": ["string", "null"]
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/QuestionOption"}
+            },
+            {"type": "null"}
+          ]
+        },
+        "answerOptions": {
+          "type": ["string", "null"]
+        },
+        "children": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/Question"}
+            },
+            {"type": "null"}
+          ]
+        },
+        "powerfeature": {
+          "type": ["boolean", "null"]
+        },
+        "disabled": {
+          "type": ["boolean", "null"]
+        },
+        "factSheetElement": {
+          "anyOf": [
+            {"$ref": "#/$defs/FactSheetElement"},
+            {"type": "null"}
+          ]
+        },
+        "settings": {
+          "anyOf": [
+            {"$ref": "#/$defs/QuestionSettings"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "QuestionOption": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "comment": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "QuestionSettings": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": ["object", "null"],
+          "additionalProperties": {"type": "string"}
+        },
+        "version": {
+          "type": ["integer", "null"]
+        },
+        "hideInResults": {
+          "type": ["boolean", "null"]
+        },
+        "isConditional": {
+          "type": ["boolean", "null"]
+        },
+        "fsSections": {
+          "type": ["object", "null"]
+        },
+        "formula": {
+          "type": ["string", "null"]
+        },
+        "dependency": {
+          "anyOf": [
+            {"$ref": "#/$defs/DependencySettings"},
+            {"type": "null"}
+          ]
+        },
+        "isMandatory": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "DependencySettings": {
+      "type": "object",
+      "required": ["parentId", "condition"],
+      "properties": {
+        "parentId": {
+          "type": "string"
+        },
+        "condition": {
+          "type": "object"
+        }
+      }
+    },
+    "FactSheetElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["string", "null"]
+        },
+        "tagGroupId": {
+          "type": ["string", "null"]
+        },
+        "subscription": {
+          "type": ["object", "null"]
+        },
+        "factSheetFieldName": {
+          "type": ["string", "null"]
+        },
+        "factSheetFieldType": {
+          "type": ["string", "null"]
+        },
+        "tagGroupMode": {
+          "type": ["string", "null"]
+        },
+        "factSheetFieldViewType": {
+          "type": ["string", "null"]
+        },
+        "properties": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/ElementProperty"}
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "ElementProperty": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "UserQuery": {
+      "type": "object",
+      "required": ["roles"],
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/UserRole"}
+        }
+      }
+    },
+    "UserRole": {
+      "type": "object",
+      "required": ["subscriptionType"],
+      "properties": {
+        "subscriptionType": {
+          "$ref": "#/$defs/SubscriptionType"
+        },
+        "roleDetails": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/UserRoleDetails"}
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "UserRoleDetails": {
+      "type": "object",
+      "required": ["name", "id"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "FactSheetQuery": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "anyOf": [
+            {"$ref": "#/$defs/QueryFilter"},
+            {"type": "null"}
+          ]
+        },
+        "ids": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "QueryFilter": {
+      "type": "object",
+      "properties": {
+        "fsType": {
+          "type": ["string", "null"]
+        },
+        "facetFilter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/FacetFilter"}
+            },
+            {"type": "null"}
+          ]
+        },
+        "fullTextSearchTerm": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "FacetFilter": {
+      "type": "object",
+      "properties": {
+        "facetKey": {
+          "type": ["string", "null"]
+        },
+        "keys": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            {"type": "null"}
+          ]
+        },
+        "operator": {
+          "anyOf": [
+            {"$ref": "#/$defs/FacetFilterOperator"},
+            {"type": "null"}
+          ]
+        },
+        "dateFilter": {
+          "anyOf": [
+            {"$ref": "#/$defs/DateFilter"},
+            {"type": "null"}
+          ]
+        },
+        "subscriptionFilter": {
+          "anyOf": [
+            {"$ref": "#/$defs/SubscriptionFilter"},
+            {"type": "null"}
+          ]
+        },
+        "subFilter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {"$ref": "#/$defs/FacetFilter"}
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "FacetFilterOperator": {
+      "type": "string",
+      "enum": ["AND", "OR", "NOR"]
+    },
+    "DateFilter": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "from": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "to": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "type": {
+          "$ref": "#/$defs/DateFilterType"
+        }
+      }
+    },
+    "DateFilterType": {
+      "type": "string",
+      "enum": ["POINT", "RANGE", "TODAY", "END_OF_MONTH", "END_OF_YEAR", "RANGE_STARTS", "RANGE_ENDS"]
+    },
+    "SubscriptionFilter": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/SubscriptionType"
+        },
+        "roleId": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "title": "Q1 Application Health Check",
+      "introductionText": "Please review and update information about your applications.",
+      "questionnaire": {
+        "questions": [
+          {
+            "id": "q1",
+            "label": "What is the current lifecycle status?",
+            "type": "singlechoice",
+            "options": [
+              {"id": "active", "label": "Active"},
+              {"id": "phaseout", "label": "Phase Out"},
+              {"id": "endoflife", "label": "End of Life"}
+            ]
+          }
+        ]
+      },
+      "userQuery": {
+        "roles": [
+          {
+            "subscriptionType": "RESPONSIBLE"
+          }
+        ]
+      }
+    }
+  ]
+}

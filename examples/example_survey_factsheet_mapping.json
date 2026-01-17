@@ -1,0 +1,95 @@
+{
+  "title": "Application Data Quality Review",
+  "introductionText": "Help us improve data quality by reviewing and updating key application fields.",
+  "questionnaire": {
+    "questions": [
+      {
+        "id": "q1_description",
+        "label": "Please review and update the application description",
+        "type": "textarea",
+        "descriptiveText": "Provide a clear, concise description of what this application does",
+        "factSheetElement": {
+          "type": "description",
+          "factSheetFieldName": "description",
+          "factSheetFieldType": "TEXT"
+        }
+      },
+      {
+        "id": "q2_business_owner",
+        "label": "Confirm the business owner",
+        "type": "text",
+        "descriptiveText": "Name of the business owner responsible for this application",
+        "factSheetElement": {
+          "type": "custom_field",
+          "factSheetFieldName": "businessOwner",
+          "factSheetFieldType": "TEXT"
+        }
+      },
+      {
+        "id": "q3_lifecycle",
+        "label": "Current lifecycle phase",
+        "type": "singlechoice",
+        "options": [
+          {
+            "id": "plan",
+            "label": "Plan"
+          },
+          {
+            "id": "active",
+            "label": "Active"
+          },
+          {
+            "id": "phaseout",
+            "label": "Phase Out"
+          },
+          {
+            "id": "endoflife",
+            "label": "End of Life"
+          }
+        ],
+        "factSheetElement": {
+          "type": "lifecycle",
+          "factSheetFieldName": "lifecycle",
+          "factSheetFieldType": "SINGLE_SELECT"
+        }
+      },
+      {
+        "id": "q4_tags",
+        "label": "Application tags",
+        "descriptiveText": "Select all relevant tags for categorization",
+        "type": "multiplechoice",
+        "options": [
+          {
+            "id": "customer_facing",
+            "label": "Customer Facing"
+          },
+          {
+            "id": "internal",
+            "label": "Internal"
+          },
+          {
+            "id": "legacy",
+            "label": "Legacy"
+          },
+          {
+            "id": "strategic",
+            "label": "Strategic"
+          }
+        ],
+        "factSheetElement": {
+          "type": "tags",
+          "factSheetFieldName": "tags",
+          "factSheetFieldType": "MULTI_SELECT",
+          "tagGroupId": "application-categories"
+        }
+      }
+    ]
+  },
+  "userQuery": {
+    "roles": [
+      {
+        "subscriptionType": "RESPONSIBLE"
+      }
+    ]
+  }
+}
