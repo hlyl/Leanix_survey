@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   # FastAPI Backend Service
   api:
@@ -30,11 +28,11 @@ services:
       - leanix-network
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 15s
     
     restart: unless-stopped
     volumes:
@@ -73,11 +71,11 @@ services:
       - leanix-network
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8502/_stcore/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8502/_stcore/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
     
     restart: unless-stopped
     volumes:
@@ -85,8 +83,7 @@ services:
       - ./examples:/app/examples:ro  # Example surveys
     
     depends_on:
-      api:
-        condition: service_healthy
+      - api
 
 # Network for service-to-service communication
 networks:

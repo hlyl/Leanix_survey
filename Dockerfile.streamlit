@@ -11,6 +11,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 # Copy project files
+COPY README.md .
 COPY .python-version .
 COPY pyproject.toml .
 COPY requirements.txt* .
@@ -28,7 +29,7 @@ EXPOSE 8502
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8502/_stcore/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8502/_stcore/health')" || exit 1
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
