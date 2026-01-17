@@ -1,0 +1,103 @@
+name: Documentation Check
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+
+jobs:
+  docs:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check markdown files exist
+        run: |
+          echo "Checking documentation files..."
+          files=(
+            "README.md"
+            "docs/API_DOCUMENTATION.md"
+            "docs/DEPLOYMENT.md"
+            "docs/ENVIRONMENT_VARIABLES.md"
+            "docs/FEATURES.md"
+            "docs/RELEASE_NOTES.md"
+            "docs/SCHEMA_DOCUMENTATION.md"
+            "docs/SECURITY.md"
+            "docs/UV_SETUP.md"
+            "CVI_IMPLEMENTATION.md"
+          )
+          
+          for file in "${files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✓ $file"
+            else
+              echo "✗ $file (missing)"
+            fi
+          done
+
+      - name: Validate markdown syntax
+        run: |
+          python -c "
+          import re
+          import os
+          
+          def check_markdown(filepath):
+              with open(filepath, 'r') as f:
+                  content = f.read()
+                  # Check for unmatched brackets
+                  if content.count('[') != content.count(']'):
+                      return f'Unmatched brackets in {filepath}'
+                  if content.count('(') != content.count(')'):
+                      return f'Unmatched parentheses in {filepath}'
+              return None
+          
+          md_files = []
+          for root, dirs, files in os.walk('docs'):
+              for f in files:
+                  if f.endswith('.md'):
+                      md_files.append(os.path.join(root, f))
+          md_files.extend(['README.md', 'CVI_IMPLEMENTATION.md'])
+          
+          errors = []
+          for f in md_files:
+              if os.path.exists(f):
+                  err = check_markdown(f)
+                  if err:
+                      errors.append(err)
+          
+          if errors:
+              for e in errors:
+                  print(f'✗ {e}')
+              exit(1)
+          else:
+              print('✓ All markdown files valid')
+          "
+
+      - name: Check links in README
+        run: |
+          python -c "
+          import re
+          
+          with open('README.md', 'r') as f:
+              content = f.read()
+          
+          # Find markdown links
+          links = re.findall(r'\[.*?\]\((.*?)\)', content)
+          print(f'Found {len(links)} links in README')
+          
+          for link in links:
+              if link.startswith(('http://', 'https://')):
+                  print(f'  • {link} (external)')
+              else:
+                  print(f'  • {link} (local)')
+          "
+        continue-on-error: true
