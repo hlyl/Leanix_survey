@@ -41,9 +41,8 @@ app = FastAPI(
 )
 
 # CORS middleware - restricted to specified origins for security
-allowed_origins = (
-    os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8501")
-    .split(",")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8501").split(
+    ","
 )
 app.add_middleware(
     CORSMiddleware,
@@ -144,9 +143,7 @@ class BatchSurveyCreateRequest(BaseModel):
     """Batch request to create multiple surveys."""
 
     requests: list[SurveyCreateRequest]
-    fail_fast: bool = Field(
-        True, description="Stop processing after the first failure when true"
-    )
+    fail_fast: bool = Field(True, description="Stop processing after the first failure when true")
 
 
 class BatchSurveyCreateResponse(BaseModel):
@@ -378,7 +375,9 @@ async def create_survey_batch(
                 )
             )
             if batch_request.fail_fast:
-                logger.warning("Fail-fast enabled; stopping batch after unexpected error at %s", index)
+                logger.warning(
+                    "Fail-fast enabled; stopping batch after unexpected error at %s", index
+                )
                 break
 
     succeeded = sum(1 for r in results if r.success)

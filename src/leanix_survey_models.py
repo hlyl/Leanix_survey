@@ -175,14 +175,14 @@ class Question(BaseModel):
         """Ensure choice questions have options"""
         if self.type in ["singlechoice", "multiplechoice"]:
             if not self.options:
-                raise ValueError(
-                    f"Questions of type '{self.type}' must have at least one option"
-                )
+                raise ValueError(f"Questions of type '{self.type}' must have at least one option")
         return self
 
     @field_validator("options")
     @classmethod
-    def validate_options_for_choice_questions(cls, v: list[QuestionOption], info) -> list[QuestionOption]:
+    def validate_options_for_choice_questions(
+        cls, v: list[QuestionOption], info
+    ) -> list[QuestionOption]:
         """Ensure choice questions have options"""
         if info.data.get("type") in ["singlechoice", "multiplechoice"] and not v:
             raise ValueError(f"Questions of type {info.data.get('type')} must have options")

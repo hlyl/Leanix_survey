@@ -128,7 +128,8 @@ st.set_page_config(
     page_title="LeanIX Survey Creator",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded",)
+    initial_sidebar_state="expanded",
+)
 
 # ============================================================================
 # Novo Nordisk CVI Branding & Styling
@@ -140,7 +141,7 @@ st.markdown(
     /* CVI Color Palette - Novo Nordisk */
     h1, h2, h3 { color: #001965 !important; }
     p, body { color: #001965; }
-    
+
     /* Buttons - Sea Blue (Primary) */
     div.stButton > button {
         background-color: #0055B8;
@@ -156,26 +157,26 @@ st.markdown(
         box-shadow: 0 4px 8px rgba(0, 25, 101, 0.2);
         transform: translateY(-1px);
     }
-    
+
     /* Text Areas - True Blue Border */
     .stTextArea textarea {
         border-radius: 6px !important;
         border: 1px solid #0055B8 !important;
     }
-    
+
     /* Tabs */
     .stTabs [data-baseweb="tab"] { color: #001965; font-weight: 500; }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         color: #0055B8;
         border-bottom-color: #0055B8 !important;
     }
-    
+
     /* Status Messages */
     .stSuccess { background-color: #E8F5E9 !important; }
     .stError { background-color: #FFEBEE !important; }
     .stWarning { background-color: #FFF3E0 !important; }
     .stInfo { background-color: #E3F2FD !important; }
-    
+
     /* Dividers */
     hr { border-color: #0055B8 !important; }
     </style>
@@ -348,7 +349,7 @@ with tab1:
     )
 
     col_buttons, col_uploader = st.columns([2, 1], vertical_alignment="center")
-    
+
     with col_buttons:
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -371,20 +372,17 @@ with tab1:
                         else:
                             st.error("✗ Validation failed")
                             st.code(error_msg)
-        
+
         with btn_col2:
             if st.button("Clear", use_container_width=True):
                 st.session_state.survey_input = None
                 st.session_state.validation_result = None
                 st.session_state.json_input = ""
                 st.rerun()
-    
+
     with col_uploader:
         uploaded_file = st.file_uploader(
-            "Upload JSON",
-            type="json",
-            label_visibility="collapsed",
-            help="Upload a JSON file"
+            "Upload JSON", type="json", label_visibility="collapsed", help="Upload a JSON file"
         )
         if uploaded_file is not None:
             try:

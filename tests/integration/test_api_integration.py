@@ -103,11 +103,7 @@ class TestValidationEndpoint:
     def test_validate_missing_required_field(self, client):
         """Test validation with missing required field."""
         invalid_json = json.dumps(
-            {
-                "questionnaire": {
-                    "questions": [{"id": "q1", "label": "Q1", "type": "text"}]
-                }
-            }
+            {"questionnaire": {"questions": [{"id": "q1", "label": "Q1", "type": "text"}]}}
         )
         response = client.post("/api/validate", json={"json_input": invalid_json})
         assert response.status_code == 200
@@ -221,9 +217,7 @@ class TestBatchCreateSurveyEndpoint:
         assert data["results"][0]["poll_id"] == "poll-1"
 
     @pytest.mark.asyncio
-    async def test_batch_create_multiple_items(
-        self, client, valid_survey_dict, leanix_credentials
-    ):
+    async def test_batch_create_multiple_items(self, client, valid_survey_dict, leanix_credentials):
         """Test batch creation with multiple surveys."""
         with patch("src.leanix_client.LeanIXClient.create_poll") as mock_create:
             mock_create.return_value = {

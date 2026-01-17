@@ -38,7 +38,9 @@ class LeanIXClient:
         payload = poll_data.model_dump(by_alias=True, exclude_none=True)
 
         try:
-            response = await self.http_client.post(url, params=params, headers=self.headers, json=payload)
+            response = await self.http_client.post(
+                url, params=params, headers=self.headers, json=payload
+            )
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:
@@ -65,7 +67,9 @@ class LeanIXClient:
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:
-            logger.warning("LeanIX API returned status %s for poll %s", exc.response.status_code, poll_id)
+            logger.warning(
+                "LeanIX API returned status %s for poll %s", exc.response.status_code, poll_id
+            )
             raise HTTPException(
                 status_code=exc.response.status_code,
                 detail="Poll not found or access denied",
