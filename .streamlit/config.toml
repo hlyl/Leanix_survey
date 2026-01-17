@@ -1,0 +1,21 @@
+# Novo Nordisk Corporate Visual Identity (CVI) Theme Configuration
+# Based on Novo Nordisk CVI Guidelines 2024
+
+[theme]
+# Primary Colors
+primaryColor = "#0055B8"                    # Sea Blue (primary actions)
+backgroundColor = "#FFFFFF"                 # Snow White (main background)
+secondaryBackgroundColor = "#F5D1D8"        # Rose Pink 15% tint (card backgrounds)
+textColor = "#001965"                       # True Blue (text, never black)
+
+# Typography
+font = "sans serif"
+
+[client]
+# Disable default menu and footer to apply custom branding
+showMenuItems = true
+showErrorDetails = true
+
+[logger]
+level = "info"
+

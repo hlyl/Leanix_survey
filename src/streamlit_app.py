@@ -24,7 +24,7 @@ from src.leanix_survey_models import SurveyInput
 from src.validate_survey import validate_json_string
 
 # Configure logging
-logging.basicConfig(level=logging.getenv("LOG_LEVEL", "INFO"))
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
@@ -128,7 +128,59 @@ st.set_page_config(
     page_title="LeanIX Survey Creator",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded",)
+
+# ============================================================================
+# Novo Nordisk CVI Branding & Styling
+# ============================================================================
+
+st.markdown(
+    """
+    <style>
+    /* CVI Color Palette - Novo Nordisk */
+    h1, h2, h3 { color: #001965 !important; }
+    p, body { color: #001965; }
+    
+    /* Buttons - Sea Blue (Primary) */
+    div.stButton > button {
+        background-color: #0055B8;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 24px;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 25, 101, 0.1);
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:hover {
+        background-color: #001965;
+        box-shadow: 0 4px 8px rgba(0, 25, 101, 0.2);
+        transform: translateY(-1px);
+    }
+    
+    /* Text Areas - True Blue Border */
+    .stTextArea textarea {
+        border-radius: 6px !important;
+        border: 1px solid #0055B8 !important;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab"] { color: #001965; font-weight: 500; }
+    .stTabs [data-baseweb="tab"][aria-selected="true"] {
+        color: #0055B8;
+        border-bottom-color: #0055B8 !important;
+    }
+    
+    /* Status Messages */
+    .stSuccess { background-color: #E8F5E9 !important; }
+    .stError { background-color: #FFEBEE !important; }
+    .stWarning { background-color: #FFF3E0 !important; }
+    .stInfo { background-color: #E3F2FD !important; }
+    
+    /* Dividers */
+    hr { border-color: #0055B8 !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 # ============================================================================
@@ -143,6 +195,9 @@ if "validation_result" not in st.session_state:
 
 if "created_poll_id" not in st.session_state:
     st.session_state.created_poll_id = None
+
+if "json_input" not in st.session_state:
+    st.session_state.json_input = ""
 
 
 # ============================================================================
@@ -159,7 +214,8 @@ def load_example(example_name: str) -> str:
     }
 
     if example_name in example_files:
-        file_path = Path(__file__).parent / example_files[example_name]
+        # Examples are in /examples directory (parent of /src)
+        file_path = Path(__file__).parent.parent / "examples" / example_files[example_name]
         if file_path.exists():
             with open(file_path, encoding="utf-8") as f:
                 return f.read()
@@ -264,7 +320,7 @@ with st.sidebar:
     if st.button("Load Example") and example_choice != "None":
         example_json = load_example(example_choice)
         if example_json:
-            st.session_state.example_json = example_json
+            st.session_state.json_input = example_json
             st.success(f"Loaded {example_choice} example!")
             st.rerun()
 
@@ -283,46 +339,61 @@ tab1, tab2, tab3 = st.tabs(["📝 JSON Input", "✅ Validation", "🚀 Create Su
 with tab1:
     st.header("Survey Definition (JSON)")
 
-    # Check if example was loaded
-    initial_value = st.session_state.get("example_json", "")
-    if initial_value:
-        # Clear the example from session state after using it
-        del st.session_state.example_json
-
     json_input = st.text_area(
         "Paste your survey JSON here",
-        value=initial_value,
+        value=st.session_state.json_input,
+        key="json_input",
         height=400,
         help="Enter or paste the survey definition JSON",
     )
 
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        if st.button("Validate JSON", type="primary", use_container_width=True):
-            if not json_input.strip():
-                st.error("Please enter survey JSON")
-            else:
-                with st.spinner("Validating..."):
-                    is_valid, survey_input, error_msg = validate_survey_json(json_input)
+    col_buttons, col_uploader = st.columns([2, 1], vertical_alignment="center")
+    
+    with col_buttons:
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            if st.button("Validate JSON", type="primary", use_container_width=True):
+                if not json_input.strip():
+                    st.error("Please enter survey JSON")
+                else:
+                    with st.spinner("Validating..."):
+                        is_valid, survey_input, error_msg = validate_survey_json(json_input)
 
-                    st.session_state.validation_result = {
-                        "valid": is_valid,
-                        "survey_input": survey_input,
-                        "error": error_msg,
-                    }
+                        st.session_state.validation_result = {
+                            "valid": is_valid,
+                            "survey_input": survey_input,
+                            "error": error_msg,
+                        }
 
-                    if is_valid:
-                        st.session_state.survey_input = survey_input
-                        st.success("✓ JSON is valid!")
-                    else:
-                        st.error("✗ Validation failed")
-                        st.code(error_msg)
-
-    with col2:
-        if st.button("Clear", use_container_width=True):
-            st.session_state.survey_input = None
-            st.session_state.validation_result = None
-            st.rerun()
+                        if is_valid:
+                            st.session_state.survey_input = survey_input
+                            st.success("✓ JSON is valid!")
+                        else:
+                            st.error("✗ Validation failed")
+                            st.code(error_msg)
+        
+        with btn_col2:
+            if st.button("Clear", use_container_width=True):
+                st.session_state.survey_input = None
+                st.session_state.validation_result = None
+                st.session_state.json_input = ""
+                st.rerun()
+    
+    with col_uploader:
+        uploaded_file = st.file_uploader(
+            "Upload JSON",
+            type="json",
+            label_visibility="collapsed",
+            help="Upload a JSON file"
+        )
+        if uploaded_file is not None:
+            try:
+                file_content = uploaded_file.read().decode("utf-8")
+                st.session_state.json_input = file_content
+                st.success(f"Loaded: {uploaded_file.name}")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 
 # --------------------------------------------------------------------------
