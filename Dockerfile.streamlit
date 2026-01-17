@@ -1,0 +1,43 @@
+# Streamlit Frontend Dockerfile
+# LeanIX Survey Creator - Frontend Service
+# Built on Python 3.12 with UV for fast dependency management
+
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install UV for fast Python package management
+RUN pip install --no-cache-dir uv
+
+# Copy project files
+COPY .python-version .
+COPY pyproject.toml .
+COPY requirements.txt* .
+COPY src/ src/
+COPY examples/ examples/
+COPY .streamlit/ .streamlit/
+
+# Install dependencies using UV
+RUN uv venv && \
+    . .venv/bin/activate && \
+    uv pip install -e .
+
+# Expose Streamlit port
+EXPOSE 8502
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8502/_stcore/health')" || exit 1
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/app/.venv/bin:$PATH"
+
+# Configure Streamlit
+RUN mkdir -p ~/.streamlit && \
+    echo "[server]\nheadless = true\nport = 8502\nenableXsrfProtection = false" > ~/.streamlit/config.toml
+
+# Run Streamlit frontend
+CMD ["streamlit", "run", "src/streamlit_app.py", "--server.port=8502", "--server.address=0.0.0.0"]

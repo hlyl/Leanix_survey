@@ -33,6 +33,7 @@ jobs:
             "docs/SCHEMA_DOCUMENTATION.md"
             "docs/SECURITY.md"
             "docs/UV_SETUP.md"
+            "docs/novo-nordisk-cvi-guidelines.md"
             "CVI_IMPLEMENTATION.md"
           )
           
