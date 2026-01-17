@@ -5,17 +5,11 @@
 # Primary Colors
 primaryColor = "#0055B8"                    # Sea Blue (primary actions)
 backgroundColor = "#FFFFFF"                 # Snow White (main background)
-secondaryBackgroundColor = "#E8F1FF"                    # Light Sea Blue tint (card backgrounds)
+secondaryBackgroundColor = "#E8F1FF"        # Light Sea Blue tint (card backgrounds)
 textColor = "#001965"                       # True Blue (text, never black)
 
 # Typography
 font = "sans serif"
 
-[client]
-# Disable default menu and footer to apply custom branding
-showMenuItems = true
-showErrorDetails = true
-
 [logger]
 level = "info"
-
