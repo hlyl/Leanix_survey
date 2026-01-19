@@ -273,6 +273,9 @@ async def create_survey(
             due_date=create_request.due_date,
         )
 
+        # Debug logging
+        logger.debug(f"Poll data prepared: {poll_data.model_dump(by_alias=True, exclude_none=True)}")
+
         # Create poll in LeanIX
         logger.info("Sending poll creation request to LeanIX")
         response = await client.create_poll(poll_data)

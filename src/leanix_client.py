@@ -26,8 +26,46 @@ class LeanIXClient:
         self.config = config
         self.base_url = config.base_url.rstrip("/")
         self.http_client = http_client
-        self.headers = {
-            "Authorization": f"Bearer {config.api_token}",
+        self._access_token: str | None = None
+        self._token_expiry: float = 0
+
+    async def _get_access_token(self) -> str:
+        """Exchange API token for OAuth access token if needed."""
+        import time
+
+        # Check if we have a valid cached token
+        if self._access_token and time.time() < self._token_expiry:
+            return self._access_token
+
+        # Exchange API token for access token
+        oauth_url = f"{self.base_url}/services/mtm/v1/oauth2/token"
+        auth = ("apitoken", self.config.api_token)
+
+        try:
+            response = await self.http_client.post(
+                oauth_url,
+                auth=auth,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data={"grant_type": "client_credentials"},
+            )
+            response.raise_for_status()
+            token_data = response.json()
+            self._access_token = token_data["access_token"]
+            # Cache token with 60 second buffer before expiry
+            self._token_expiry = time.time() + token_data.get("expires_in", 3600) - 60
+            return self._access_token
+        except Exception as exc:
+            logger.error("Failed to exchange API token for access token: %s", exc)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Failed to authenticate with LeanIX",
+            ) from exc
+
+    async def _get_headers(self) -> dict[str, str]:
+        """Get headers with valid access token."""
+        access_token = await self._get_access_token()
+        return {
+            "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
 
@@ -36,10 +74,14 @@ class LeanIXClient:
         url = f"{self.base_url}/services/poll/v2/polls"
         params = {"workspaceId": str(self.config.workspace_id)}
         payload = poll_data.model_dump(by_alias=True, exclude_none=True)
+        headers = await self._get_headers()
+
+        logger.debug(f"Creating poll at {url}")
+        logger.debug(f"Payload: {payload}")
 
         try:
             response = await self.http_client.post(
-                url, params=params, headers=self.headers, json=payload
+                url, params=params, headers=headers, json=payload
             )
             response.raise_for_status()
             return response.json()
@@ -61,9 +103,10 @@ class LeanIXClient:
         """Retrieve a poll by ID from LeanIX."""
         url = f"{self.base_url}/services/poll/v2/polls/{poll_id}"
         params = {"workspaceId": str(self.config.workspace_id)}
+        headers = await self._get_headers()
 
         try:
-            response = await self.http_client.get(url, params=params, headers=self.headers)
+            response = await self.http_client.get(url, params=params, headers=headers)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:

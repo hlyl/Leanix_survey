@@ -440,11 +440,46 @@ class PollCreate(BaseModel):
         Returns:
             PollCreate instance ready to send to LeanIX API
         """
+        from uuid import uuid5, NAMESPACE_DNS
+        import json
+
+        # Deep copy questionnaire and transform IDs to UUIDs
+        questionnaire_dict = survey_input.questionnaire.model_dump()
+        
+        # Transform question IDs to deterministic UUIDs
+        for question in questionnaire_dict.get("questions", []):
+            # Generate deterministic UUID from question ID
+            original_id = question["id"]
+            question["id"] = str(uuid5(NAMESPACE_DNS, f"question-{original_id}"))
+            
+            # Transform option IDs if present
+            if "options" in question and question["options"]:
+                for option in question["options"]:
+                    original_opt_id = option["id"]
+                    option["id"] = str(uuid5(NAMESPACE_DNS, f"option-{original_id}-{original_opt_id}"))
+            
+            # Transform nested questions recursively
+            if "questions" in question and question["questions"]:
+                def transform_nested(questions, parent_id):
+                    for q in questions:
+                        orig = q["id"]
+                        q["id"] = str(uuid5(NAMESPACE_DNS, f"question-{parent_id}-{orig}"))
+                        if "options" in q and q["options"]:
+                            for opt in q["options"]:
+                                orig_opt = opt["id"]
+                                opt["id"] = str(uuid5(NAMESPACE_DNS, f"option-{orig}-{orig_opt}"))
+                        if "questions" in q and q["questions"]:
+                            transform_nested(q["questions"], orig)
+                transform_nested(question["questions"], original_id)
+        
+        # Reconstruct questionnaire with UUID-transformed data
+        questionnaire_with_uuids = Questionnaire(**questionnaire_dict)
+
         return cls(
             title=survey_input.title,
             language=language,
             factSheetType=fact_sheet_type,
-            questionnaire=survey_input.questionnaire,
+            questionnaire=questionnaire_with_uuids,
             dueDate=due_date,
             introductionText=survey_input.introduction_text,
             introductionSubject=survey_input.introduction_subject,

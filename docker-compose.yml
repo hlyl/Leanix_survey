@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: leanix-api
     ports:
       - "8000:8000"
     environment:
@@ -45,7 +44,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.streamlit
-    container_name: leanix-frontend
     ports:
       - "8502:8502"
     environment:
@@ -62,6 +60,9 @@ services:
       - LEANIX_URL=${LEANIX_URL:-https://your-instance.leanix.net}
       - LEANIX_API_TOKEN=${LEANIX_API_TOKEN:-your-token-here}
       - LEANIX_WORKSPACE_ID=${LEANIX_WORKSPACE_ID:-your-workspace-uuid}
+      # Optional: multiple workspaces for dropdown in UI
+      - LEANIX_WORKSPACES=${LEANIX_WORKSPACES:-}
+      - LEANIX_WORKSPACES_JSON=${LEANIX_WORKSPACES_JSON:-}
       
       # Python Configuration
       - PYTHONUNBUFFERED=1

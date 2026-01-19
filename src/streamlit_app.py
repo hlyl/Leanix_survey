@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import date, timedelta
+import json
 from pathlib import Path
 from uuid import UUID
 
@@ -28,6 +29,42 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+
+
+# ----------------------------------------------------------------------------
+# Workspace selection helpers
+# ----------------------------------------------------------------------------
+
+def parse_workspaces_env() -> dict[str, str]:
+    """Parse workspaces mapping from environment.
+
+    Supports two formats:
+    - LEANIX_WORKSPACES_JSON: JSON object mapping names to UUIDs
+      Example: {"NovoNordisk_sandbox": "uuid", "NovoNordisk_proc": "uuid"}
+    - LEANIX_WORKSPACES: comma-separated "name:uuid" pairs
+      Example: "NovoNordisk_sandbox:uuid,NovoNordisk_proc:uuid"
+    """
+    mapping: dict[str, str] = {}
+
+    raw_json = os.getenv("LEANIX_WORKSPACES_JSON")
+    if raw_json:
+        try:
+            data = json.loads(raw_json)
+            if isinstance(data, dict):
+                # Ensure all values are strings
+                mapping = {str(k): str(v) for k, v in data.items()}
+                return mapping
+        except Exception:
+            pass
+
+    raw_list = os.getenv("LEANIX_WORKSPACES")
+    if raw_list:
+        parts = [p.strip() for p in raw_list.split(",") if p.strip()]
+        for p in parts:
+            if ":" in p:
+                name, wid = p.split(":", 1)
+                mapping[name.strip()] = wid.strip()
+    return mapping
 
 
 # ============================================================================
@@ -265,17 +302,38 @@ with st.sidebar:
 
     leanix_url = st.text_input(
         "LeanIX Instance URL",
-        value="https://your-instance.leanix.net",
+        value=os.getenv("LEANIX_URL", "https://your-instance.leanix.net"),
         help="Your LeanIX instance URL",
     )
 
     api_token = st.text_input(
-        "API Token", type="password", help="LeanIX API token with poll creation permissions"
+        "API Token",
+        value=os.getenv("LEANIX_API_TOKEN", ""),
+        type="password",
+        help="LeanIX API token with poll creation permissions",
     )
 
-    workspace_id = st.text_input(
-        "Workspace ID", help="UUID of the workspace where the survey will be created"
-    )
+    # Workspace selection: dropdown from env if available, otherwise manual input
+    workspaces_map = parse_workspaces_env()
+    if workspaces_map:
+        names = list(workspaces_map.keys())
+        default_index = 0
+        # Try to preselect by single LEANIX_WORKSPACE_ID if matches any value
+        preselect_id = os.getenv("LEANIX_WORKSPACE_ID")
+        if preselect_id:
+            try:
+                default_index = max(0, names.index(next(n for n, wid in workspaces_map.items() if wid == preselect_id)))
+            except Exception:
+                default_index = 0
+        selected_name = st.selectbox("Workspace", options=names, index=default_index)
+        workspace_id = workspaces_map[selected_name]
+        st.caption(f"Selected workspace ID: {workspace_id}")
+    else:
+        workspace_id = st.text_input(
+            "Workspace ID",
+            value=os.getenv("LEANIX_WORKSPACE_ID", ""),
+            help="UUID of the workspace where the survey will be created",
+        )
 
     st.divider()
 
