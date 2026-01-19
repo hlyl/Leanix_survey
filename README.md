@@ -15,6 +15,7 @@ A Python application for programmatically creating and managing LeanIX surveys w
 - 🔄 **Connection Pooling**: Shared HTTP client for improved performance
 - 📊 **LeanIX Integration**: Direct API integration with LeanIX Poll API v2
 - ✅ **Comprehensive Tests**: 36 unit and integration tests
+- 🐳 **Docker Support**: Pre-built images published to GitHub Container Registry
 
 ## What's New in v1.1.0
 
@@ -108,6 +109,32 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 ```
+
+### Using Docker (Production)
+
+Pre-built Docker images are automatically published to GitHub Container Registry after successful tests.
+
+**Pull and run with Docker Compose:**
+
+```bash
+# Pull latest images
+docker pull ghcr.io/hlyl/leanix_survey-api:latest
+docker pull ghcr.io/hlyl/leanix_survey-frontend:latest
+
+# Create .env file with your credentials
+cp .env.example .env
+# Edit .env with your LeanIX configuration
+
+# Run with pre-built images
+docker compose -f docker-compose.yml up -d
+```
+
+**Available image tags:**
+- `latest` - Latest stable build from main branch
+- `1.0.0` - Specific version release
+- `sha-<hash>` - Specific commit build
+
+**For detailed Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)**
 
 ## Quick Start
 
