@@ -49,6 +49,32 @@ This document lists all configurable environment variables for the LeanIX Survey
 
 ---
 
+## Container Registry (GHCR)
+
+For local development when pulling/pushing Docker images manually. **CI/CD uses `GITHUB_TOKEN` automatically.**
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `GHCR_USERNAME` | string | - | GitHub username for GHCR authentication (local use only) |
+| `GHCR_TOKEN` | string | - | GitHub Personal Access Token with `packages:write` scope (local use only) |
+
+**Setting up local GHCR access:**
+
+1. Create a [GitHub Personal Access Token](https://github.com/settings/tokens) with `read:packages` and `write:packages` scopes
+2. Add to `.env`:
+   ```env
+   GHCR_USERNAME=your-github-username
+   GHCR_TOKEN=ghp_yourPersonalAccessToken
+   ```
+3. Login to GHCR:
+   ```bash
+   echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USERNAME --password-stdin
+   ```
+
+**Note:** GitHub Actions workflows use `GITHUB_TOKEN` automatically with appropriate permissions. No manual token setup is needed for CI/CD.
+
+---
+
 ## Configuration Examples
 
 ### Development Environment

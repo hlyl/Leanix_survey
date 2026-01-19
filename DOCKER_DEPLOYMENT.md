@@ -98,6 +98,111 @@ docker compose ps
 ### 4. Stop Services
 
 ```bash
+# Stop all services
+docker compose down
+
+# Stop and remove volumes
+docker compose down -v
+```
+
+---
+
+## Using Pre-built Images from GHCR
+
+### Pull Published Images
+
+Instead of building locally, you can pull pre-built images from GitHub Container Registry:
+
+```bash
+# Login to GHCR (using GitHub personal access token)
+docker login ghcr.io -u YOUR_GITHUB_USERNAME
+
+# Pull latest images
+docker pull ghcr.io/hlyl/leanix_survey-api:latest
+docker pull ghcr.io/hlyl/leanix_survey-frontend:latest
+
+# Pull specific version
+docker pull ghcr.io/hlyl/leanix_survey-api:1.0.0
+docker pull ghcr.io/hlyl/leanix_survey-frontend:1.0.0
+```
+
+### Use Pre-built Images in Compose
+
+Create a `docker-compose.production.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  api:
+    image: ghcr.io/hlyl/leanix_survey-api:latest
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - leanix-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    image: ghcr.io/hlyl/leanix_survey-frontend:latest
+    ports:
+      - "8502:8502"
+    env_file:
+      - .env
+    environment:
+      - BACKEND_URL=http://api:8000
+    networks:
+      - leanix-network
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8502/_stcore/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  leanix-network:
+    driver: bridge
+```
+
+Run with pre-built images:
+
+```bash
+docker compose -f docker-compose.production.yml up -d
+```
+
+### Available Image Tags
+
+| Tag | Description | Example |
+|-----|-------------|----------|
+| `latest` | Latest build from main branch | `ghcr.io/hlyl/leanix_survey-api:latest` |
+| `<version>` | Specific release version | `ghcr.io/hlyl/leanix_survey-api:1.0.0` |
+| `sha-<hash>` | Specific commit SHA | `ghcr.io/hlyl/leanix_survey-api:sha-abc1234` |
+
+### Image Publishing
+
+Images are automatically built and published to GHCR via GitHub Actions when:
+- Tests pass successfully on `main` or `develop` branches
+- Manual workflow dispatch is triggered
+
+Authentication uses `GITHUB_TOKEN` automatically in CI/CD. For local development, set up a GitHub Personal Access Token with `packages:write` scope.
+
+---
+
+## Manual Build & Push to GHCR
+
+For manual image publishing:
+
+```bash
 # Stop services (keep containers)
 docker compose stop
 
