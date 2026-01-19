@@ -427,6 +427,7 @@ class PollCreate(BaseModel):
         language: str,
         fact_sheet_type: str,
         due_date: date | None = None,
+        transform_ids_to_uuid: bool = False,
     ) -> "PollCreate":
         """
         Create a PollCreate instance from SurveyInput and UI-collected data.
@@ -436,50 +437,58 @@ class PollCreate(BaseModel):
             language: Language code from UI
             fact_sheet_type: Fact sheet type from UI
             due_date: Optional due date from UI
+            transform_ids_to_uuid: When True, deterministically transform question/option
+                IDs to UUIDs to satisfy LeanIX API requirements. Defaults to False so
+                that local validations/tests preserve original IDs.
 
         Returns:
             PollCreate instance ready to send to LeanIX API
         """
-        from uuid import uuid5, NAMESPACE_DNS
-        import json
+        if transform_ids_to_uuid:
+            from uuid import uuid5, NAMESPACE_DNS
 
-        # Deep copy questionnaire and transform IDs to UUIDs
-        questionnaire_dict = survey_input.questionnaire.model_dump()
-        
-        # Transform question IDs to deterministic UUIDs
-        for question in questionnaire_dict.get("questions", []):
-            # Generate deterministic UUID from question ID
-            original_id = question["id"]
-            question["id"] = str(uuid5(NAMESPACE_DNS, f"question-{original_id}"))
-            
-            # Transform option IDs if present
-            if "options" in question and question["options"]:
-                for option in question["options"]:
-                    original_opt_id = option["id"]
-                    option["id"] = str(uuid5(NAMESPACE_DNS, f"option-{original_id}-{original_opt_id}"))
-            
-            # Transform nested questions recursively
-            if "questions" in question and question["questions"]:
-                def transform_nested(questions, parent_id):
-                    for q in questions:
-                        orig = q["id"]
-                        q["id"] = str(uuid5(NAMESPACE_DNS, f"question-{parent_id}-{orig}"))
-                        if "options" in q and q["options"]:
-                            for opt in q["options"]:
-                                orig_opt = opt["id"]
-                                opt["id"] = str(uuid5(NAMESPACE_DNS, f"option-{orig}-{orig_opt}"))
-                        if "questions" in q and q["questions"]:
-                            transform_nested(q["questions"], orig)
-                transform_nested(question["questions"], original_id)
-        
-        # Reconstruct questionnaire with UUID-transformed data
-        questionnaire_with_uuids = Questionnaire(**questionnaire_dict)
+            # Deep copy questionnaire and transform IDs to UUIDs
+            questionnaire_dict = survey_input.questionnaire.model_dump()
+
+            # Transform question IDs to deterministic UUIDs
+            for question in questionnaire_dict.get("questions", []):
+                original_id = question["id"]
+                question["id"] = str(uuid5(NAMESPACE_DNS, f"question-{original_id}"))
+
+                # Transform option IDs if present
+                if "options" in question and question["options"]:
+                    for option in question["options"]:
+                        original_opt_id = option["id"]
+                        option["id"] = str(
+                            uuid5(NAMESPACE_DNS, f"option-{original_id}-{original_opt_id}")
+                        )
+
+                # Transform nested questions recursively
+                if "questions" in question and question["questions"]:
+                    def transform_nested(questions, parent_id):
+                        for q in questions:
+                            orig = q["id"]
+                            q["id"] = str(uuid5(NAMESPACE_DNS, f"question-{parent_id}-{orig}"))
+                            if "options" in q and q["options"]:
+                                for opt in q["options"]:
+                                    orig_opt = opt["id"]
+                                    opt["id"] = str(uuid5(NAMESPACE_DNS, f"option-{orig}-{orig_opt}"))
+                            if "questions" in q and q["questions"]:
+                                transform_nested(q["questions"], orig)
+
+                    transform_nested(question["questions"], original_id)
+
+            # Reconstruct questionnaire with UUID-transformed data
+            questionnaire_model = Questionnaire(**questionnaire_dict)
+        else:
+            # Preserve original IDs (used by tests and local validation)
+            questionnaire_model = survey_input.questionnaire
 
         return cls(
             title=survey_input.title,
             language=language,
             factSheetType=fact_sheet_type,
-            questionnaire=questionnaire_with_uuids,
+            questionnaire=questionnaire_model,
             dueDate=due_date,
             introductionText=survey_input.introduction_text,
             introductionSubject=survey_input.introduction_subject,

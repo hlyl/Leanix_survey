@@ -271,6 +271,7 @@ async def create_survey(
             language=create_request.language,
             fact_sheet_type=create_request.fact_sheet_type,
             due_date=create_request.due_date,
+            transform_ids_to_uuid=True,
         )
 
         # Debug logging
@@ -338,6 +339,7 @@ async def create_survey_batch(
                 language=create_request.language,
                 fact_sheet_type=create_request.fact_sheet_type,
                 due_date=create_request.due_date,
+                transform_ids_to_uuid=True,
             )
             response = await client.create_poll(poll_data)
 
