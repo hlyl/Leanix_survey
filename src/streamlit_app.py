@@ -16,12 +16,11 @@ import os
 from datetime import date, timedelta
 import json
 from pathlib import Path
-from uuid import UUID
-
 import httpx
 import streamlit as st
 
 from src.leanix_survey_models import SurveyInput
+from src.leanix_config import validate_leanix_url, validate_api_token, validate_workspace_id
 from src.validate_survey import validate_json_string
 
 # Configure logging
@@ -36,35 +35,19 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 # ----------------------------------------------------------------------------
 
 def parse_workspaces_env() -> dict[str, str]:
-    """Parse workspaces mapping from environment.
+    """Parse workspaces mapping from LEANIX_WORKSPACES_JSON environment variable.
 
-    Supports two formats:
-    - LEANIX_WORKSPACES_JSON: JSON object mapping names to UUIDs
-      Example: {"NovoNordisk_sandbox": "uuid", "NovoNordisk_proc": "uuid"}
-    - LEANIX_WORKSPACES: comma-separated "name:uuid" pairs
-      Example: "NovoNordisk_sandbox:uuid,NovoNordisk_proc:uuid"
+    Example: {"Sandbox": "uuid-1", "Production": "uuid-2"}
     """
-    mapping: dict[str, str] = {}
-
     raw_json = os.getenv("LEANIX_WORKSPACES_JSON")
     if raw_json:
         try:
             data = json.loads(raw_json)
             if isinstance(data, dict):
-                # Ensure all values are strings
-                mapping = {str(k): str(v) for k, v in data.items()}
-                return mapping
+                return {str(k): str(v) for k, v in data.items()}
         except Exception:
             pass
-
-    raw_list = os.getenv("LEANIX_WORKSPACES")
-    if raw_list:
-        parts = [p.strip() for p in raw_list.split(",") if p.strip()]
-        for p in parts:
-            if ":" in p:
-                name, wid = p.split(":", 1)
-                mapping[name.strip()] = wid.strip()
-    return mapping
+    return {}
 
 
 # ============================================================================
@@ -128,33 +111,6 @@ def create_survey_via_api(
                 return False, None, error_msg
     except Exception as exc:
         return False, None, f"Backend error: {exc}"
-
-
-def simple_url_validation(url: str) -> tuple[bool, str]:
-    """Simple client-side URL validation for LeanIX."""
-    if not url or url == "https://your-instance.leanix.net":
-        return False, "LeanIX URL not configured"
-    if not url.startswith(("http://", "https://")):
-        return False, "URL must start with http:// or https://"
-    return True, ""
-
-
-def simple_token_validation(token: str) -> tuple[bool, str]:
-    """Simple client-side token validation."""
-    if not token or len(token.strip()) == 0:
-        return False, "API token cannot be empty"
-    return True, ""
-
-
-def validate_workspace_id_format(workspace_id: str) -> tuple[bool, str]:
-    """Validate workspace UUID format locally (no backend call needed)."""
-    if not workspace_id or len(workspace_id.strip()) == 0:
-        return False, "Workspace ID cannot be empty"
-    try:
-        UUID(workspace_id)
-        return True, ""
-    except ValueError:
-        return False, "Workspace ID must be a valid UUID"
 
 
 # ============================================================================
@@ -561,22 +517,26 @@ with tab3:
         ready_to_create = True
         issues = []
 
-        # Validate URL
-        url_valid, url_error = simple_url_validation(leanix_url)
-        if not url_valid:
-            issues.append(f"LeanIX URL: {url_error}")
+        # Validate URL (also check for placeholder)
+        if leanix_url == "https://your-instance.leanix.net":
+            issues.append("LeanIX URL: URL not configured")
             ready_to_create = False
+        else:
+            url_valid, url_errors = validate_leanix_url(leanix_url)
+            if not url_valid:
+                issues.append(f"LeanIX URL: {'; '.join(url_errors)}")
+                ready_to_create = False
 
         # Validate API token
-        token_valid, token_error = simple_token_validation(api_token)
+        token_valid, token_errors = validate_api_token(api_token)
         if not token_valid:
-            issues.append(f"API Token: {token_error}")
+            issues.append(f"API Token: {'; '.join(token_errors)}")
             ready_to_create = False
 
         # Validate workspace ID
-        ws_valid, ws_error = validate_workspace_id_format(workspace_id)
+        ws_valid, ws_errors = validate_workspace_id(workspace_id)
         if not ws_valid:
-            issues.append(f"Workspace ID: {ws_error}")
+            issues.append(f"Workspace ID: {'; '.join(ws_errors)}")
             ready_to_create = False
 
         if not fact_sheet_type:

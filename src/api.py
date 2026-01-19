@@ -53,7 +53,6 @@ app.add_middleware(
 )
 
 logger.info(f"Allowed CORS origins: {', '.join(allowed_origins)}")
-logger.info(f"Allowed CORS origins: {', '.join(allowed_origins)}")
 
 
 # ============================================================================

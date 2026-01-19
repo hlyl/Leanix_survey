@@ -39,6 +39,19 @@ def validate_api_token(token: str) -> tuple[bool, list[str]]:
     return len(errors) == 0, errors
 
 
+def validate_workspace_id(workspace_id: str) -> tuple[bool, list[str]]:
+    """Validate workspace UUID format."""
+    errors: list[str] = []
+    if not workspace_id or len(workspace_id.strip()) == 0:
+        errors.append("Workspace ID cannot be empty")
+    else:
+        try:
+            UUID(workspace_id)
+        except ValueError:
+            errors.append("Workspace ID must be a valid UUID")
+    return len(errors) == 0, errors
+
+
 class LeanIXConfig(BaseModel):
     """LeanIX API configuration."""
 
